@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OmniCore AI — Pro</title>
+<style>
+  :root { --bg:#171717; --side:#0f0f0f; --card:#212121; --usr:#2f2f2f; --bdr:#2c2c2c; --txt:#ececec; --mut:#888; --acc:#10a37f; --fs:15.5px; }
+  body.light { --bg:#f7f7f8; --side:#ececf1; --card:#fff; --usr:#e3e5e8; --bdr:#d9d9e3; --txt:#1f2328; --mut:#555; }
+  body.blue { --bg:#0b1120; --side:#060a14; --card:#131c31; --usr:#1e293b; --bdr:#1e293b; --txt:#e2e8f0; --mut:#94a3b8; --acc:#38bdf8; }
+  * { box-sizing:border-box; margin:0; padding:0; font-family:system-ui,sans-serif; }
+  html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); color:var(--txt); display:flex; }
+  aside { width:245px; min-width:245px; background:var(--side); border-right:1px solid var(--bdr); padding:14px; display:flex; flex-direction:column; }
+  .brand { font-size:18px; font-weight:700; margin-bottom:12px; } .brand span { color:var(--acc); }
+  .btn { width:100%; background:var(--card); color:var(--txt); border:1px solid var(--bdr); padding:9px 12px; border-radius:10px; cursor:pointer; font-size:13px; font-weight:600; text-align:left; margin-bottom:10px; }
+  .btn:hover { border-color:var(--acc); }
+  #hist { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:4px; margin:6px 0; }
+  .h-item { display:flex; justify-content:space-between; padding:8px 10px; border-radius:8px; font-size:13px; color:var(--mut); cursor:pointer; }
+  .h-item:hover, .h-item.act { background:var(--card); color:var(--txt); }
+  .h-t { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:170px; }
+  main { flex:1; height:100%; display:flex; flex-direction:column; overflow:hidden; }
+  #box { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; align-items:center; }
+  .wrap { width:100%; max-width:760px; display:flex; flex-direction:column; gap:16px; }
+  .hero { margin:auto; text-align:center; } .hero h1 { font-size:28px; margin-bottom:8px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:14px; }
+  .chip { background:var(--card); border:1px solid var(--bdr); padding:7px 13px; border-radius:16px; font-size:12.5px; cursor:pointer; }
+  .chip:hover { border-color:var(--acc); }
+  .row { display:flex; flex-direction:column; width:100%; }
+  .u-wrap { align-self:flex-end; max-width:80%; display:flex; flex-direction:column; align-items:flex-end; }
+  .u-bub { background:var(--usr); padding:10px 14px; border-radius:16px; font-size:var(--fs); line-height:1.5; }
+  .ed { font-size:11px; color:var(--mut); cursor:pointer; margin-top:3px; }
+  .ai-bub { font-size:var(--fs); line-height:1.65; white-space:pre-wrap; word-break:break-word; }
+  .ai-nm { font-size:12px; font-weight:700; color:var(--acc); margin-bottom:4px; }
+  .acts { display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
+  .pill { background:var(--card); border:1px solid var(--bdr); color:var(--mut); font-size:11.5px; padding:4px 10px; border-radius:12px; cursor:pointer; }
+  .srcs { display:none; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .srcs a { background:var(--card); border:1px solid var(--bdr); color:var(--acc); padding:4px 9px; border-radius:6px; font-size:11.5px; text-decoration:none; }
+  .bar { padding:10px 20px 16px; border-top:1px solid var(--bdr); display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .f-prev { width:100%; max-width:760px; display:none; justify-content:space-between; background:var(--card); border:1px solid var(--bdr); padding:5px 12px; border-radius:8px; margin-bottom:6px; font-size:12px; color:var(--acc); }
+  .ibar { width:100%; max-width:760px; background:var(--card); border:1px solid var(--bdr); border-radius:22px; padding:6px 12px; display:flex; align-items:center; gap:8px; }
+  .ibtn { background:transparent; color:var(--mut); border:1px solid var(--bdr); width:33px; height:33px; border-radius:50%; cursor:pointer; flex-shrink:0; }
+  .ibtn.rec { background:#ef4444; color:#fff; }
+  input[type="text"] { flex:1; background:transparent; border:none; color:var(--txt); font-size:15px; outline:none; min-width:0; }
+  .sbtn { background:var(--acc); color:#fff; border:none; width:33px; height:33px; border-radius:50%; font-weight:700; cursor:pointer; flex-shrink:0; }
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:99; align-items:center; justify-content:center; }
+  .mcard { background:var(--card); border:1px solid var(--bdr); width:90%; max-width:380px; border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:14px; }
+  .srow { display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+  select { background:var(--bg); color:var(--txt); border:1px solid var(--bdr); padding:5px 8px; border-radius:6px; }
+</style>
+</head>
+<body>
+<aside>
+  <div class="brand"><span>⚡</span> OmniCore AI</div>
+  <button class="btn" onclick="newChat()">+ New Chat</button>
+  <div style="font-size:11px;color:var(--mut);">RECENT CHATS</div>
+  <div id="hist"></div>
+  <button class="btn" style="margin:0;" onclick="document.getElementById('mod').style.display='flex'">⚙️ Settings</button>
+</aside>
+<main>
+  <div id="box">
+    <div class="hero" id="hero">
+      <h1>How can I help you today?</h1>
+      <p style="color:var(--mut);font-size:13px;">Smart Knowledge • Voice • Edit • Settings</p>
+      <div class="chips">
+        <div class="chip" onclick="qAsk('Rampus School Gorakhpur ke baare me batao')">🏫 Rampus School</div>
+        <div class="chip" onclick="qAsk('Ek royal lion ki photo banao')">🦁 Generate Image</div>
+        <div class="chip" onclick="qAsk('Tumhe kisne aur kab banaya?')">👨‍💻 Creator</div>
+      </div>
+    </div>
+    <div class="wrap" id="wrap"></div>
+  </div>
+  <div class="bar">
+    <div class="f-prev" id="fp"><span id="fl"></span><span style="cursor:pointer;" onclick="clrF()">× Remove</span></div>
+    <div class="ibar">
+      <input type="file" id="fi" style="display:none" onchange="upF(this)">
+      <button class="ibtn" onclick="document.getElementById('fi').click()">+</button>
+      <button class="ibtn" id="mic" onclick="voice()">🎙️</button>
+      <input type="text" id="inp" placeholder="Ask anything..." onkeydown="if(event.key==='Enter'){event.preventDefault();go();}">
+      <button class="sbtn" onclick="go()">↑</button>
+    </div>
+  </div>
+</main>
+<div class="modal" id="mod" onclick="if(event.target===this)this.style.display='none'">
+  <div class="mcard">
+    <div style="display:flex;justify-content:space-between;font-weight:700;"><span>⚙️ Settings</span><span style="cursor:pointer;" onclick="document.getElementById('mod').style.display='none'">✕</span></div>
+    <div class="srow"><span>Theme</span><select id="st" onchange="setP()"><option value="">Dark</option><option value="blue">Blue</option><option value="light">Light</option></select></div>
+    <div class="srow"><span>Font Size</span><select id="sf" onchange="setP()"><option value="14px">Small</option><option value="15.5px" selected>Medium</option><option value="18px">Large</option></select></div>
+    <div class="srow"><span>Memorization</span><input type="checkbox" id="sm" checked onchange="setP()"></div>
+    <div class="srow"><span>Auto Web Search</span><input type="checkbox" id="ss" checked onchange="setP()"></div>
+    <button class="btn" style="text-align:center;margin:0;" onclick="document.getElementById('mod').style.display='none'">Done</button>
+  </div>
+</div>
+<script>
+let chats = JSON.parse(localStorage.getItem("oc_c") || "{}");
+let prefs = JSON.parse(localStorage.getItem("oc_p") || '{"t":"","f":"15.5px","m":true,"s":true}');
+let cid = null, fName = "", fText = "", spk = false;
+
+function setP() {
+  prefs = {
+    t: document.getElementById("st").value,
+    f: document.getElementById("sf").value,
+    m: document.getElementById("sm").checked,
+    s: document.getElementById("ss").checked
+  };
+  localStorage.setItem("oc_p", JSON.stringify(prefs));
+  document.body.className = prefs.t;
+  document.documentElement.style.setProperty("--fs", prefs.f);
+}
+
+document.getElementById("st").value = prefs.t;
+document.getElementById("sf").value = prefs.f;
+document.getElementById("sm").checked = prefs.m;
+document.getElementById("ss").checked = prefs.s;
+setP();
+
+function save() {
+  localStorage.setItem("oc_c", JSON.stringify(chats));
+  drawSide();
+}
+
+function drawSide() {
+  const h = document.getElementById("hist");
+  h.innerHTML = "";
+  Object.keys(chats).reverse().forEach(function(id) {
+    h.innerHTML += '<div class="h-item ' + (id === cid ? 'act' : '') + '" onclick="ld(\'' + id + '\')">' +
+      '<span class="h-t">' + chats[id].t + '</span>' +
+      '<span onclick="delC(event,\'' + id + '\')">×</span></div>';
+  });
+}
+
+function delC(e, id) {
+  e.stopPropagation();
+  delete chats[id];
+  if (cid === id) newChat();
+  else save();
+}
+
+function newChat() {
+  cid = null;
+  clrF();
+  document.getElementById("wrap").innerHTML = "";
+  document.getElementById("hero").style.display = "block";
+  drawSide();
+}
+
+function clrF() {
+  fName = "";
+  fText = "";
+  document.getElementById("fp").style.display = "none";
+}
+
+function qAsk(q) {
+  document.getElementById("inp").value = q;
+  go();
+}
+
+async function upF(el) {
+  const f = el.files.item(0);
+  if (!f) return;
+  document.getElementById("fp").style.display = "flex";
+  document.getElementById("fl").innerText = "Reading " + f.name + "...";
+  const fd = new FormData();
+  fd.append("file", f);
+  try {
+    const r = await fetch("/upload", { method: "POST", body: fd });
+    const d = await r.json();
+    if (d.ok) {
+      fName = d.filename;
+      fText = d.text;
+      document.getElementById("fl").innerText = "📄 " + fName;
+    } else {
+      document.getElementById("fl").innerText = "❌ " + d.error;
+    }
+  } catch (err) {
+    document.getElementById("fl").innerText = "❌ Upload error";
+  }
+  el.value = "";
+}
+
+function voice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert("Use Chrome or Edge for Voice");
+    return;
+  }
+  const b = document.getElementById("mic");
+  const r = new SR();
+  r.lang = "hi-IN";
+  b.classList.add("rec");
+  r.start();
+  r.onresult = function(e) {
+    document.getElementById("inp").value = e.results.item(0).item(0).transcript;
+    b.classList.remove("rec");
+    go();
+  };
+  r.onerror = function() { b.classList.remove("rec"); };
+  r.onend = function() { b.classList.remove("rec"); };
+}
+
+function listen(btn, txt) {
+  if (spk) {
+    speechSynthesis.cancel();
+    spk = false;
+    btn.innerText = "🔊 Listen";
+    return;
+  }
+  const u = new SpeechSynthesisUtterance(txt);
+  u.lang = "hi-IN";
+  spk = true;
+  btn.innerText = "⏹️ Stop";
+  u.onend = function() {
+    spk = false;
+    btn.innerText = "🔊 Listen";
+  };
+  speechSynthesis.speak(u);
+}
+
+function ed(i) {
+  const nt = prompt("Edit message:", chats[cid].m[i].text);
+  if (!nt) return;
+  chats[cid].m = chats[cid].m.slice(0, i);
+  save();
+  ld(cid);
+  document.getElementById("inp").value = nt;
+  go();
+}
+
+function ld(id) {
+  cid = id;
+  document.getElementById("hero").style.display = "none";
+  document.getElementById("wrap").innerHTML = "";
+  chats[id].m.forEach(function(m, i) {
+    if (m.role === "user") addU(m.text, m.fn, i);
+    else addA(m.text, m.srcs, false);
+  });
+  drawSide();
+}
+
+function addU(txt, fn, i) {
+  const fb = fn ? '<div style="font-size:11px;color:var(--acc);margin-bottom:4px;">📄 ' + fn + '</div>' : '';
+  document.getElementById("wrap").innerHTML += '<div class="row"><div class="u-wrap"><div class="u-bub">' + fb + txt.replace(/</g, "&lt;") + '</div><span class="ed" onclick="ed(' + i + ')">✏️ Edit</span></div></div>';
+}
+
+function addA(txt, srcs, sc) {
+  const w = document.getElementById("wrap");
+  const uid = "s" + Math.random().toString(36).slice(2, 7);
+  let body = "";
+  if (txt.indexOf("IMG_URL:") === 0) {
+    body = '<img src="' + txt.slice(8) + '" style="max-width:400px;width:100%;border-radius:12px;margin-top:6px;">';
+  } else {
+    body = txt.replace(/</g, "&lt;");
+  }
+  let sBtn = "", sBox = "";
+  if (srcs && srcs.length > 0) {
+    sBtn = '<button class="pill" onclick="toggleSrc(\'' + uid + '\')">🔗 Sources (' + srcs.length + ') ▾</button>';
+    let links = "";
+    for (let j = 0; j < srcs.length; j++) {
+      links += '<a href="' + srcs[j].url + '" target="_blank">🌐 ' + srcs[j].title + '</a>';
+    }
+    sBox = '<div class="srcs" id="' + uid + '">' + links + '</div>';
+  }
+  const lBtn = txt.indexOf("IMG_URL:") === 0 ? "" : '<button class="pill" onclick="listen(this, this.parentElement.previousElementSibling.innerText)">🔊 Listen</button>';
+  w.innerHTML += '<div class="row"><div class="ai-nm">⚡ OmniCore AI</div><div class="ai-bub">' + body + '</div><div class="acts">' + lBtn + sBtn + '</div>' + sBox + '</div>';
+  if (sc !== false) document.getElementById("box").scrollTop = document.getElementById("box").scrollHeight;
+}
+
+function toggleSrc(uid) {
+  const e = document.getElementById(uid);
+  e.style.display = (e.style.display === "flex") ? "none" : "flex";
+}
+
+async function go() {
+  const inp = document.getElementById("inp");
+  const txt = inp.value.trim();
+  if (!txt && !fText) return;
+  const q = txt || ("Explain " + fName);
+  const fn = fName, ft = fText;
+  clrF();
+  if (!cid) {
+    cid = "c" + Date.now();
+    chats[cid] = { t: (fn || q).slice(0, 26), m: [], fm: "" };
+  }
+  if (ft) chats[cid].fm = ft;
+  document.getElementById("hero").style.display = "none";
+  addU(q, fn, chats[cid].m.length);
+  chats[cid].m.push({ role: "user", text: q, fn: fn });
+  save();
+  inp.value = "";
+  const lid = "l" + Date.now();
+  document.getElementById("wrap").innerHTML += '<div class="row" id="' + lid + '"><div class="ai-nm">⚡ OmniCore AI</div><div class="ai-bub" style="color:var(--mut);">Thinking...</div></div>';
+  document.getElementById("box").scrollTop = document.getElementById("box").scrollHeight;
+  try {
+    const r = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: q,
+        history: chats[cid].m.slice(-12),
+        file_context: chats[cid].fm,
+        search: prefs.s,
+        memory: prefs.m
+      })
+    });
+    const d = await r.json();
+    document.getElementById(lid).remove();
+    addA(d.reply, d.sources, true);
+    chats[cid].m.push({ role: "ai", text: d.reply, srcs: d.sources });
+    save();
+  } catch (e) {
+    document.getElementById(lid).innerHTML = '<div class="ai-bub">❌ Error</div>';
+  }
+}
+
+drawSide();
+</script>
+</body>
+</html>
